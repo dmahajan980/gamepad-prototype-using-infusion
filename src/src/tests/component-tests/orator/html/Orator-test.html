@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" style="font-size: 16px">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Orator Tests</title>
+
+        <link rel="stylesheet" media="screen" href="../../../../src/framework/core/css/fluid.css" />
+
+        <!--  This is the jqUnit test css file -->
+        <link rel="stylesheet" media="screen" href="../../../lib/qunit/css/qunit.css" />
+
+        <script src="../../../../src/lib/jquery/core/js/jquery.js"></script>
+        <script src="../../../../src/framework/core/js/Fluid.js"></script>
+        <script src="../../../../src/framework/core/js/FluidPromises.js"></script>
+        <script src="../../../../src/framework/core/js/FluidDocument.js"></script>
+        <script src="../../../../src/framework/core/js/FluidDOMUtilities.js"></script>
+        <script src="../../../../src/framework/core/js/FluidIoC.js"></script>
+        <script src="../../../../src/framework/core/js/DataBinding.js"></script>
+        <script src="../../../../src/framework/core/js/ModelTransformation.js"></script>
+        <script src="../../../../src/framework/core/js/ModelTransformationTransforms.js"></script>
+        <script src="../../../../src/framework/core/js/FluidView.js"></script>
+        <script src="../../../../src/framework/core/js/NewViewSupport.js"></script>
+        <script src="../../../../src/framework/core/js/TextNodeParser.js"></script>
+        <script src="../../../../src/framework/enhancement/js/ContextAwareness.js"></script>
+        <script src="../../../../src/components/textToSpeech/js/TextToSpeech.js"></script>
+        <script src="../../../../src/components/textToSpeech/js/MockTTS.js"></script>
+        <script src="../../../../src/components/orator/js/Orator.js"></script>
+
+        <!--  These are the jqUnit test js files -->
+        <script src="../../../lib/qunit/js/qunit.js"></script>
+        <script src="../../../test-core/jqUnit/js/jqUnit.js"></script>
+        <script src="../../../test-core/jqUnit/js/jqUnit-browser.js"></script>
+        <script src="../../../test-core/utils/js/IoCTestUtils.js"></script>
+        <script src="../../../lib/sinon/js/sinon.js"></script>
+
+        <!-- Required to send coverage data at the end of the test run on this page -->
+        <script src="/testem.js"></script>
+        <script src="/coverage/client/coverageSender.js"></script>
+
+        <!--  These are tests that have been written using this page as data -->
+        <script src="../js/OratorTests-Utils.js"></script>
+        <script src="../js/OratorTests.js"></script>
+
+    </head>
+
+    <body style="font-size: 1.5rem;">
+        <h1 id="qunit-header">Orator Test Suite</h1>
+        <h2 id="qunit-banner"></h2>
+        <div id="qunit-testrunner-toolbar"></div>
+        <h2 id="qunit-userAgent"></h2>
+        <ol id="qunit-tests"></ol>
+        <div class="flc-orator-controller-test"></div>
+        <div class="flc-orator-domReader-test-wrap-parent" style="display: none">
+            Text <span class="flc-orator-domReader-test-wrap">wrapped text</span>
+        </div>
+        <p class="flc-orator-domReader-test" lang="en-CA">
+            Read<span></span>ing <strong lang="en-US">text</strong> from <em>DOM</em><span style="display: none;">hidden</span>
+        </p>
+        <p class="flc-orator-selectionReader-test">
+            <span class="flc-orator-selectionReader-test-selection">Selection Test</span>
+            <span class="flc-orator-selectionReader-test-selectionTwo">Other Text</span>
+            <span class="flc-orator-selectionReader-test-selectionThree">Change <span lang="en-US" class="flc-orator-selectionReader-test-selectionFour">Language</span></span>
+        </p>
+        <div class="flc-orator-test">
+            <article class="flc-orator-content">
+                Reading <strong>text</strong> from <em>DOM</em><span style="display: none;">hidden</span>
+            </article>
+        </div>
+        <p class="flc-orator-domReader-test-ttsIntegration"></p>
+    </body>
+</html>
