@@ -3,63 +3,110 @@
 (function (fluid, $) {
 
     fluid.registerNamespace("gamepad");
+    fluid.registerNamespace("gamepad.scanGamepad");
+
     // fluid.registerNamespace("gamepad.listeners");
 
+    gamepad.scanGamepad.connectivityIntervalReference = null;
+
+    // Break into subcomponents
     fluid.defaults("gamepad", {
         gradeNames: ["fluid.modelComponent"],
         model: {
-            connected: false,
-            name: null
+            name: null,
+            index: null,
+            connected: false,   // Consider removing this if not required
+            axes: [],
+            buttons: []
         },
-        listeners: {
-            "onCreate.connectionListener": "{that}.connectionListener"
+        components: {
+            scanGamepad: {
+                type: "gamepad.scanGamepad",
+                options: {
+                    model: "{gamepad}.model",
+                    listeners: {
+                        "{gamepad}.events.onCreate": "{that}.connectionListener"
+                    }
+                }
+            }
+        }
+    });
+
+    // Scan gamepad data from the API
+    fluid.defaults("gamepad.scanGamepad", {
+        gradeNames: ["fluid.modelComponent"],
+        model: {
+            connected: false
         },
         modelListeners: {
             connected: {
                 funcName: "{that}.displayMessage",
-                args: ["Gamepad connection disturbed"]
-            },
-            name: {
-                funcName: "{that}.displayMessage",
-                args: ["{that}.model.name"]
+                args: ["{that}.model"]
             }
         },
+        frequency: 100,
         invokers: {
             connectionListener: {
-                funcName: "gamepad.connectionListener",
+                funcName: "gamepad.scanGamepad.connectionListener",
                 args: ["{that}"]
             },
             displayMessage: {
                 "this": "console",
                 method: "log",
                 args: ["{arguments}.0"]
+            },
+            scanGamepadProperties: {
+                funcName: "gamepad.scanGamepad.executeInIntervals",
+                args: ["{that}.updateGamepadProperties", "{arguments}.0", "{that}.options.frequency"]
+            },
+            updateGamepadProperties: {
+                changePath: "",
+                value: ["{arguments}.0"]
+            },
+            stopScanningGamepadProperties: {
+                funcName: "clearInterval",
+                args: ["{arguments}.0"]
             }
         }
     });
 
-    gamepad.connectionListener = function(that) {
-
-        let gamepad = null;
+    gamepad.scanGamepad.connectionListener = function (that) {
 
         $( window ).on("gamepadconnected", function() {
-            if (gamepad === null) {
-                gamepad = navigator.getGamepads()[0];
 
-                that.applier.change("connected", true);
-                that.applier.change("name", gamepad.id);
-            }
+            if (that.model.connected === false || that.model[0].connected === false) {
+
+                const connectedGamepad = navigator.getGamepads()[0];
+                gamepad.scanGamepad.connectivityIntervalReference = that.scanGamepadProperties({
+                    name: connectedGamepad.id,
+                    index: connectedGamepad.index,
+                    connected: true,
+                    axes: connectedGamepad.axes,
+                    buttons: connectedGamepad.buttons
+                });
+            };
         });
 
-        $( window ).on("gamepaddisconnected", function(e) {
-            if (e.originalEvent.gamepad.index === gamepad.index) {
-                gamepad = null
+        $( window ).on("gamepaddisconnected", function (event) {
 
-                that.applier.change("connected", false);
-                that.applier.change("name", gamepad);
-            }
+            if (event.originalEvent.gamepad.index === that.model[0].index) {
+
+                that.stopScanningGamepadProperties(gamepad.scanGamepad.connectivityIntervalReference);
+                that.updateGamepadProperties({
+                    name: null,
+                    index: null,
+                    connected: false,   // Consider removing this if not required
+                    axes: [],
+                    buttons: []
+                });
+            };
         });
     };
 
-    let myInstance = gamepad();
+    gamepad.scanGamepad.executeInIntervals = function(intervalFunction, args, frequency) {
+        return setInterval(intervalFunction(args), frequency);
+    };
+
+    let newGamepad = gamepad();
 
 })(fluid, jQuery);

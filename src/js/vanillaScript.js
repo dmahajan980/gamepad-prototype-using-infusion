@@ -277,3 +277,27 @@ const downKey = activeElement => {
         $(`${activeElement} option:selected`).removeAttr('selected').next('option').attr('selected', 'selected');
     }
 }
+
+// changeGamepadModel: {
+//     funcName: "{that}.changeGamepadModel",
+//     args: ["{arguments}.0"]     // We have to pass this argument from here
+// },
+
+
+// ,
+// inputListener: {
+//     funcName: "fluid.each",
+//     args: ["{that}.model.0", "{arguments}.0"]
+// },
+// buttonListener: {
+//     funcName: "gamepad.buttonListener",
+//     args: ["{arguments}.0"]
+// }
+
+// gamepad.modelSchema = {
+//     name: null,
+//     index: null,
+//     connected: false,   // Consider removing this if not required
+//     axes: [],
+//     buttons: []
+// };
