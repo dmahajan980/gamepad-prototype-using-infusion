@@ -11,21 +11,17 @@ body {
 }
 
 h3 {
-    font-size: 5rem;
+    font-size: 3rem;
     color: rgb(60, 60, 60);
-    margin-bottom: 1vh;
+    margin-bottom: 0;
 }
 
 h4 {
     font-size: 2rem;
 }
 
-img {
-    height: 45vh;
-}
-
 ul {
-    margin-bottom: 8vh;
+    margin-bottom: 5vh;
 }
 
 ul > li {
