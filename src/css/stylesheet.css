@@ -69,6 +69,7 @@ img {
     min-height: 10vh;
     height: auto;
     border: 2px solid black;
+    background: #dfdfde;
 }
 
 a {
