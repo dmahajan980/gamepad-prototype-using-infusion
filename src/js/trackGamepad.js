@@ -36,11 +36,11 @@
                 funcName: "gamepad.tracker.getGamepadData",
                 args: ["{that}"]
             },
-            scanGamepadProperties: {
+            scanGamepadInputs: {
                 funcName: "gamepad.tracker.executeInIntervals",
                 args: ["{that}.getGamepadData", "{that}.options.frequency"]
             },
-            stopScanningGamepadProperties: {
+            stopScanningGamepadInputs: {
                 funcName: "clearInterval",
                 args: ["{arguments}.0"]
             }
@@ -51,17 +51,14 @@
 
         $( window ).on("gamepadconnected", function() {
             if (that.model.properties.connected === false) {
-
-                gamepad.tracker.connectivityIntervalReference = that.scanGamepadProperties();
-                console.log(that.model.properties)      //////////
+                gamepad.tracker.connectivityIntervalReference = that.scanGamepadInputs();
             };
         });
 
         $( window ).on("gamepaddisconnected", function (event) {
             if (event.originalEvent.gamepad.index === that.model.properties.index) {
-                console.log(that.model.properties)      //////////////
                 
-                that.stopScanningGamepadProperties(gamepad.tracker.connectivityIntervalReference);
+                that.stopScanningGamepadInputs(gamepad.tracker.connectivityIntervalReference);
                 that.applier.change("properties", {
                     label: "Gamepad not connected",
                     index: null,

@@ -28,17 +28,38 @@
                     }
                 }
             },
-            buttonHandlers: {
-                type: "gamepad.handlers.button",
-                container: ".value-box",
+            inputHandlers: {
+                type: "gamepad.handlers",
                 options: {
-                    model: {
-                        axes: {gamepad}.axes
+                    modelRelay: {
+                        buttonsArrayToObject: {
+                            target: "buttons",
+                            singleTransform: {
+                                type: "gamepad.arrayToObject",
+                                input: "{gamepad}.model.properties.buttons"
+                            }
+                        },
+                        axesArrayToObject: {
+                            target: "axes",
+                            singleTransform: {
+                                type: "gamepad.arrayToObject",
+                                input: "{gamepad}.model.properties.axes"
+                            }
+                        }
                     }
                 }
             }
         }
     });
+
+    gamepad.arrayToObject = function (array) {        
+        let inputObject = {};
+        fluid.each(array, function (input) {
+            let keyName = array.indexOf(input);
+            inputObject[keyName] = typeof input === "object" ? input.value : input;
+        });
+        return inputObject;
+    };
 
     let newGamepad = gamepad();
 
