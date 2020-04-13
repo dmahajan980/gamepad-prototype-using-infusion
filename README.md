@@ -1,6 +1,6 @@
 # Gamepad Prototype Using Infusion
 
-This repository contains the Gamepad Navigation Prototype, a demo for experiencing the browser and webpage navigation using a standard game controller such as Xbox gamepad. The demo stands as a low-level prototype for the main project: Using a Game Controller as a Navigation Aid.
+This repository contains the Gamepad Navigation Prototype, a demo for browser and webpage navigation using a standard game controller such as Xbox gamepads. The demo stands as a low-level prototype for the main project: Using a Game Controller as a Navigation Aid. This project is written using [Infusion](https://fluidproject.org/infusion.html), a JavaScript library developed and maintained by the [Fluid Community](https://fluidproject.org/about.html).
 
 ## CONTROLS
 
