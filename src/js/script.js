@@ -15,11 +15,13 @@
                 buttons: []
             }
         },
+        frequency: 100,
         components: {
             trackGamepad: {
                 type: "gamepad.tracker",
                 container: "body",
                 options: {
+                    frequency: "{gamepad}.options.frequency",
                     model: {
                         properties: "{gamepad}.model.properties"
                     },
@@ -28,19 +30,28 @@
                     }
                 }
             },
-            inputHandlers: {
-                type: "gamepad.handlers",
+            buttonsHandler: {
+                type: "gamepad.handlers.button",
                 options: {
+                    frequency: "{gamepad}.options.frequency",
                     modelRelay: {
                         buttonsArrayToObject: {
-                            target: "buttons",
+                            target: "values",
                             singleTransform: {
                                 type: "gamepad.arrayToObject",
                                 input: "{gamepad}.model.properties.buttons"
                             }
-                        },
+                        }
+                    }
+                }
+            },
+            axesHandler: {
+                type: "gamepad.handlers.axes",
+                options: {
+                    frequency: "{gamepad}.options.frequency",
+                    modelRelay: {
                         axesArrayToObject: {
-                            target: "axes",
+                            target: "values",
                             singleTransform: {
                                 type: "gamepad.arrayToObject",
                                 input: "{gamepad}.model.properties.axes"
@@ -53,11 +64,10 @@
     });
 
     gamepad.arrayToObject = function (array) {        
-        let inputObject = {};
-        fluid.each(array, function (input) {
-            let keyName = array.indexOf(input);
-            inputObject[keyName] = typeof input === "object" ? input.value : input;
-        });
+        const inputObject = {};
+        for (let index = 0; index < array.length; index++) {
+            inputObject[index] = typeof array[index] === "object" ? array[index].value : array[index];
+        };
         return inputObject;
     };
 

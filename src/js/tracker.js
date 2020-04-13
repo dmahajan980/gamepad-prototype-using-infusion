@@ -11,38 +11,34 @@
         selectors: {
             statusBox: ".status-message"
         },
+        frequency: null,
         model: {
             properties: {
                 label: "Gamepad not connected",
                 connected: false,
-                axis: []
+                axes: []
             }
         },
         modelListeners: {
-            "properties.connected": "{that}.displayGamepad"
+            "properties.connected": "{that}.displayGamepadName"
         },
-        frequency: 100,
         invokers: {
-            connectionListener: {
-                funcName: "gamepad.tracker.connectionListener",
-                args: ["{that}"]
-            },
-            displayGamepad: {
+            displayGamepadName: {
                 "this": "{that}.dom.statusBox",
                 method: "html",
                 args: ["{that}.model.properties.label"]
             },
-            getGamepadData: {
-                funcName: "gamepad.tracker.getGamepadData",
+            connectionListener: {
+                funcName: "gamepad.tracker.connectionListener",
                 args: ["{that}"]
             },
             scanGamepadInputs: {
                 funcName: "gamepad.tracker.executeInIntervals",
-                args: ["{that}.getGamepadData", "{that}.options.frequency"]
+                args: ["{that}.updateGamepadData", "{that}.options.frequency"]
             },
-            stopScanningGamepadInputs: {
-                funcName: "clearInterval",
-                args: ["{arguments}.0"]
+            updateGamepadData: {
+                funcName: "gamepad.tracker.updateGamepadData",
+                args: ["{that}"]
             }
         }
     });
@@ -58,7 +54,7 @@
         $( window ).on("gamepaddisconnected", function (event) {
             if (event.originalEvent.gamepad.index === that.model.properties.index) {
                 
-                that.stopScanningGamepadInputs(gamepad.tracker.connectivityIntervalReference);
+                clearInterval(gamepad.tracker.connectivityIntervalReference);
                 that.applier.change("properties", {
                     label: "Gamepad not connected",
                     index: null,
@@ -70,7 +66,7 @@
         });
     };
 
-    gamepad.tracker.getGamepadData = function (that) {
+    gamepad.tracker.updateGamepadData = function (that) {
         const connectedGamepad = navigator.getGamepads()[0];
         that.applier.change("properties", {
             label: connectedGamepad.id,
@@ -81,7 +77,7 @@
         });
     };
 
-    gamepad.tracker.executeInIntervals = function(intervalFunction, frequency) {
+    gamepad.tracker.executeInIntervals = function (intervalFunction, frequency) {
         return setInterval(intervalFunction, frequency);
     };
 
