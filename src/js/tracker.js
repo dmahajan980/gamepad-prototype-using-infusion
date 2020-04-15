@@ -1,6 +1,6 @@
 "use strict";
 
-// Scan gamepad data using the API
+// Track gamepad data using the API
 (function (fluid) {
 
     fluid.registerNamespace("gamepad.tracker");
@@ -13,20 +13,18 @@
         },
         frequency: null,
         model: {
-            properties: {
-                label: "Gamepad not connected",
-                connected: false,
-                axes: []
-            }
+            label: "Gamepad not connected",
+            connected: false,
+            axes: []
         },
         modelListeners: {
-            "properties.connected": "{that}.displayGamepadName"
+            connected: "{that}.displayGamepadName"
         },
         invokers: {
             displayGamepadName: {
                 "this": "{that}.dom.statusBox",
                 method: "html",
-                args: ["{that}.model.properties.label"]
+                args: ["{that}.model.label"]
             },
             connectionListener: {
                 funcName: "gamepad.tracker.connectionListener",
@@ -43,40 +41,69 @@
         }
     });
 
+    /**
+     *
+     * Listens to the connected and disconnected events of the gamepad.
+     *
+     * @param {Object} that - The gamepad tracker component.
+     *
+     */
     gamepad.tracker.connectionListener = function (that) {
 
+        // When gamepad is connected
         $( window ).on("gamepadconnected", function() {
-            if (that.model.properties.connected === false) {
+            if (that.model.connected === false) {
                 gamepad.tracker.connectivityIntervalReference = that.scanGamepadInputs();
             };
         });
 
+        // When gamepad is disconnected
         $( window ).on("gamepaddisconnected", function (event) {
-            if (event.originalEvent.gamepad.index === that.model.properties.index) {
+            if (event.originalEvent.gamepad.index === that.model.index) {
                 
                 clearInterval(gamepad.tracker.connectivityIntervalReference);
-                that.applier.change("properties", {
-                    label: "Gamepad not connected",
-                    index: null,
-                    connected: false,
-                    axes: [],
-                    buttons: []
-                });
+
+                const modelUpdateTransaction = that.applier.initiate();
+                
+                modelUpdateTransaction.fireChangeRequest({ path: "label", value: "Gamepad not connected" });
+                modelUpdateTransaction.fireChangeRequest({ path: "index", value: null });
+                modelUpdateTransaction.fireChangeRequest({ path: "connected", value: false });
+                modelUpdateTransaction.fireChangeRequest({ path: "axes", value: [] });
+                modelUpdateTransaction.fireChangeRequest({ path: "buttons", value: [] });
+
+                modelUpdateTransaction.commit();
             };
         });
     };
 
+    /**
+     *
+     * Update the gamepad model.
+     *
+     * @param {Object} that - The gamepad tracker component.
+     *
+     */
     gamepad.tracker.updateGamepadData = function (that) {
         const connectedGamepad = navigator.getGamepads()[0];
-        that.applier.change("properties", {
-            label: connectedGamepad.id,
-            index: connectedGamepad.index,
-            connected: true,
-            axes: connectedGamepad.axes,
-            buttons: connectedGamepad.buttons
-        });
+        const modelUpdateTransaction = that.applier.initiate();
+        
+        modelUpdateTransaction.fireChangeRequest({ path: "label", value: connectedGamepad.id });
+        modelUpdateTransaction.fireChangeRequest({ path: "index", value: connectedGamepad.index });
+        modelUpdateTransaction.fireChangeRequest({ path: "connected", value: true });
+        modelUpdateTransaction.fireChangeRequest({ path: "axes", value: connectedGamepad.axes });
+        modelUpdateTransaction.fireChangeRequest({ path: "buttons", value: connectedGamepad.buttons });
+
+        modelUpdateTransaction.commit();
     };
 
+    /**
+     *
+     * Execute the gamepad update method/invoker in regular, fixed intervals.
+     *
+     * @param {Function} intervalFunction - The function that updates the model.
+     * @param {Integer} frequency - The frequency in milliseconds, at which the update function is executed.
+     *
+     */
     gamepad.tracker.executeInIntervals = function (intervalFunction, frequency) {
         return setInterval(intervalFunction, frequency);
     };

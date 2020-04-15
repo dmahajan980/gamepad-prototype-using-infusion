@@ -27,10 +27,26 @@
         }
     });
 
+    /**
+     *
+     * Execute the gamepad update method/invoker in regular, fixed intervals.
+     * 
+     * @param {Function} intervalFunction - The function that updates the model.
+     * @param {Object} that - The gamepad event handler component.
+     *
+     */
     gamepad.handlers.runEveryInterval = function (intervalFunction, that) {
         that.options.interval = setInterval(intervalFunction, that.options.frequency);
     };
 
+    /**
+     *
+     * Passes every input to the event handler function.
+     * 
+     * @param {Object} object - The object containing the button/axes input key-value pairs.
+     * @param {Function} handlerFunction - The function that handles the input's navigation event.
+     *
+     */
     gamepad.handlers.passEachInput = function (object, handlerFunction) {
         const keyStrings = fluid.keys(object);
         const keys = fluid.transform(keyStrings, fluid.parseInteger);
