@@ -4,78 +4,114 @@
 
     fluid.registerNamespace("gamepad.handlers.button");
 
+    /**
+     * 
+     * The 'configuration' option present in the component provides a
+     * default layout to map each button to a particular action. It can
+     * also allow the user to reconfigure the buttons as they want. For
+     * example, the user might want the action performed by the button 
+     * "0", to be performed by button "2" or "3" instead. So, they can 
+     * simply swap the values and the controller will perform the same
+     * action, but with the desired button, as configured by the user.
+     * 
+     * The value "vacant" represents that the particular button is set 
+     * to do nothing.
+     * 
+     */
     fluid.defaults("gamepad.handlers.button", {
-        gradeNames: ["gamepad.handlers"],
-        invokers: {            
-            inputEvents: {
-                funcName: "gamepad.handlers.button.inputEvents",
-                args: ["{arguments}.0", "{arguments}.1"]
+        gradeNames: ["fluid.modelComponent"],
+        configuration: { 
+            "0": "click",
+            "1": "vacant",
+            "2": "vacant", 
+            "3": "vacant", 
+            "4": "focusOnPreviousElement", 
+            "5": "focusOnNextElement", 
+            "6": "prevPageInHistory", 
+            "7": "nextPageInHistory", 
+            "8": "vacant", 
+            "9": "reloadWindow", 
+            "10": "vacant", 
+            "11": "vacant", 
+            "12": "goToPreviousOption", 
+            "13": "goToNextOption", 
+            "14": "goToPreviousOption", 
+            "15": "goToNextOption",
+            "16": "vacant" 
+        },
+        modelListeners: {
+            "values.*": {
+                funcName: "{that}.buttonHandler",
+                args: ["{change}"]
+            }
+        },
+        invokers: {
+            buttonHandler: {
+                funcName: "gamepad.handlers.button.buttonHandler",
+                args: ["{that}", "{arguments}.0"]
+            },
+            click: "gamepad.handlers.button.clickEventHandler",
+            prevFocus: "gamepad.handlers.button.prevFocus",
+            nextFocus: "gamepad.handlers.button.nextFocus",
+            focusOnPreviousElement: {
+                funcName: "gamepad.handlers.button.focusElement",
+                args: ["{that}.prevFocus"]
+            },
+            focusOnNextElement: {
+                funcName: "gamepad.handlers.button.focusElement",
+                args: ["{that}.nextFocus"]
+            },
+            prevPageInHistory: {
+                "this": "window.history",
+                method: "back"
+            },
+            nextPageInHistory: {
+                "this": "window.history",
+                method: "forward"
+            },
+            reloadWindow: {
+                "this": "location",
+                method: "reload"
+            },
+            upKey: "gamepad.handlers.button.upKey",
+            downKey: "gamepad.handlers.button.downKey",
+            goToPreviousOption: {
+                funcName: "gamepad.handlers.button.arrowKeyEventHandler",
+                args: ["{that}.upKey"]
+            },
+            goToNextOption: {
+                funcName: "gamepad.handlers.button.arrowKeyEventHandler",
+                args: ["{that}.downKey"]
             }
         }
     });
-
-    /**
+  
+   /**
      *
-     * Respond to a button press by firing one of the functions that produce navigation effects.
-     *
-     * @param {Integer} buttonIndex - The index of the button.
-     * @param {Integer} value - The index of the gamepad.
+     * Calls the invoker methods when button is pressed according to 
+     * the configuration provided to the component to produce a 
+     * navigation effect.
+     * 
+     * @param {Object} that - The axes handler component.
+     * @param {Object} change - The recipt for the change in input values
+     *                          of a button.
      *
      */
-    gamepad.handlers.button.inputEvents = function (buttonIndex, value) {
-        if (value > 0.4) {
-            switch (buttonIndex) {
-
-                // Click on the currently focused element.
-                case 0: 
-                    gamepad.handlers.button.clickEventHandler();
-                    break;
-
-                // Move the focus to the previous element.
-                case 4:
-                    gamepad.handlers.button.focusElement(gamepad.handlers.button.prevFocus);
-                    break;
-
-                // Move the focus to the next element.
-                case 5:
-                    gamepad.handlers.button.focusElement(gamepad.handlers.button.nextFocus);
-                    break;
-                
-                // Move to previous page in the history.
-                case 6:
-                    window.history.back();
-                    break;
-
-                // Move to next page in the history.
-                case 7:
-                    window.history.forward();
-                    break;
-
-                // Reload the webpage.
-                case 9:
-                    location.reload();
-                    break;
-
-                // Move to previous option in the SELECT dropdown.
-                case 12:
-                case 14:
-                    gamepad.handlers.button.arrowKeyEventHandler(gamepad.handlers.button.upKey);
-                    break;
-
-                // Move to previous option in the SELECT dropdown.
-                case 13:
-                case 15:
-                    gamepad.handlers.button.arrowKeyEventHandler(gamepad.handlers.button.downKey);
-                    break;
-            };
+    gamepad.handlers.button.buttonHandler = function (that, change) {
+        let path = change.path[change.path.length - 1];
+        let buttonConfiguration = that.options.configuration[path];
+        if (change.value > 0.4 && buttonConfiguration != "vacant") {
+            that[buttonConfiguration]();
         };
     };
 
     /**
      *
-     * Produce an action that causes the focus to move to the next or previous element.
+     * Produce an action that causes the focus to move to the next or 
+     * previous element.
      *
-     * @param {Function} action - It determines whether to move to the next or the previous element.
+     * @param {Function} action - It determines whether to move to the 
+     *                            next or the previous element.
      *
      */
     gamepad.handlers.button.focusElement = function (action) {
@@ -83,20 +119,30 @@
         // Filter for selecting all focussable elements.
         const focussableElementsFilter = 'a:not([disabled]), button:not([disabled]), input:not([disabled]), select, [tabindex]:not([disabled]):not([tabindex="-1"])';
 
-        // Select the focussable elements from the webpage and store them.
+        /**
+         * 
+         * Select the focussable elements from the webpage and store 
+         * them.
+         * 
+         **/
         const focussable = Array.prototype.filter.call($(focussableElementsFilter),
             function (element) {
                 return element.offsetWidth > 0 || element.offsetHeight > 0 || element === document.activeElement;
             }
         );
 
-        // Find index of currently focussed element amongst others stored in the `focussable` array.
+        /**
+         * 
+         * Find index of currently focussed element amongst others 
+         * stored in the `focussable` array.
+         * 
+         **/
         const activeElementIndex = focussable.indexOf(document.activeElement);
         action(activeElementIndex, focussable);
         
         // Move the focus to first element when the BODY tag is focussed.
         if (document.activeElement === document.querySelector('body')) {
-            focussable[0].focus();
+            fluid.focus(focussable[0]);
         };
     };
 
@@ -105,7 +151,8 @@
      * Causes the focus to move to the next focusable element.
      *
      * @param {Integer} index - The index of the currently focused element.
-     * @param {Array} focussable - The array containing all the focussable elements.
+     * @param {Array} focussable - The array containing all the focussable
+     *                             elements.
      *
      */
     gamepad.handlers.button.nextFocus = function (index, focussable) {
@@ -113,7 +160,7 @@
         // If any element is currently focussed.
         if (index > -1) {
             const nextElement = focussable[index + 1] || focussable[0];
-            nextElement.focus();
+            fluid.focus(nextElement);
         };
     };
 
@@ -122,7 +169,8 @@
      * Causes the focus to move to the previous focusable element.
      *
      * @param {Integer} index - The index of the currently focused element.
-     * @param {Array} focussable - The array containing all the focussable elements.
+     * @param {Array} focussable - The array containing all the focussable
+     *                             elements.
      *
      */
     gamepad.handlers.button.prevFocus = function (index, focussable) {
@@ -130,7 +178,7 @@
         // If any element is currently focussed.
         if (index > -1) {
             const prevElement = focussable[index - 1] || focussable[focussable.length - 1];
-            prevElement.focus();
+            fluid.focus(prevElement);
         };
     };
 
@@ -175,7 +223,8 @@
      *
      * Navigate across various options in the dropdown menu.
      *
-     * @param {Function} keyFunction - The array containing all the focussable elements.
+     * @param {Function} keyFunction - The array containing all the 
+     *                                 focussable elements.
      *
      */
     gamepad.handlers.button.arrowKeyEventHandler = function (keyFunction) {
@@ -191,7 +240,8 @@
      *
      * Navigate to the previous option in the dropdown menu.
      *
-     * @param {Object} activeElement - The array containing all the focussable elements.
+     * @param {Object} activeElement - The array containing all the 
+     *                                 focussable elements.
      *
      */
     gamepad.handlers.button.upKey = function (activeElement) {
@@ -205,7 +255,8 @@
      *
      * Navigate to the next option in the dropdown menu.
      *
-     * @param {Object} activeElement - The array containing all the focussable elements.
+     * @param {Object} activeElement - The array containing all the 
+     *                                 focussable elements.
      *
      */
     gamepad.handlers.button.downKey = function (activeElement) {

@@ -19,7 +19,6 @@
                 type: "gamepad.tracker",
                 container: "body",
                 options: {
-                    frequency: "{gamepad}.options.frequency",
                     model: {
                         label: "{gamepad}.model.label",
                         index: "{gamepad}.model.index",
@@ -35,7 +34,6 @@
             buttonsHandler: {
                 type: "gamepad.handlers.button",
                 options: {
-                    frequency: "{gamepad}.options.frequency",
                     modelRelay: {
                         buttonsArrayToObject: {
                             target: "values",

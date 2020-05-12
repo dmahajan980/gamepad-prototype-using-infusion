@@ -4,48 +4,118 @@
 
     fluid.registerNamespace("gamepad.handlers.axes");
 
+    /**
+     * 
+     * The 'configuration' option present in the component provides a
+     * default layout to map each joystick axes to a particular action.
+     * It can also allow the user to reconfigure the buttons as they 
+     * want. For example, the user might want the action performed by
+     * the axes "0", to be performed by axes "2" or "3" instead. So, 
+     * they can simply swap the values and the controller will perform 
+     * the same action, but with the desired axes, as configured by 
+     * the user.
+     * 
+     * The value "vacant" represents that the particular axes is set to
+     * do nothing.
+     * 
+     */
     fluid.defaults("gamepad.handlers.axes", {
-        gradeNames: ["gamepad.handlers"],
-        invokers: {            
-            inputEvents: {
-                funcName: "gamepad.handlers.axes.inputEvents",
-                args: ["{arguments}.0", "{arguments}.1"]
+        gradeNames: ["fluid.modelComponent"],
+        intervalForHorizontalScroll: null,
+        intervalForVerticalScroll: null,
+        frequency: null,
+        configuration: {
+            "0": "scrollHorizontally",
+            "1": "scrollVertically",
+            "2": "rightAxesHandler",
+            "3": "rightAxesHandler"
+        },
+        modelListeners: {
+            "values.*": {
+                funcName: "{that}.axesHandler",
+                args: ["{change}"]
+            }
+        },
+        invokers: {  
+            axesHandler: {
+                funcName: "gamepad.handlers.axes.axesHandler",
+                args: ["{that}", "{arguments}.0"]
+            },
+            scrollHorizontally: {
+                funcName: "gamepad.handlers.axes.scrollHorizontally",
+                args: ["{that}", "{arguments}.0"]
+            },
+            scrollVertically: {
+                funcName: "gamepad.handlers.axes.scrollVertically",
+                args: ["{that}", "{arguments}.0"]
+            },
+            rightAxesHandler: {
+                funcName: "gamepad.handlers.axes.rightAxesHandler",
+                args: ["{arguments}.0"]
             }
         }
     });
 
     /**
      *
-     * Passes every axes input to the event handler function.
+     * Calls the invoker methods when axes is shifted according to the 
+     * configuration provided to the component to produce a navigation
+     * effect.
      * 
-     * @param {Integer} axesIndex - The index of the axes input.
-     * @param {Integer} value - The value of the axes input.
+     * @param {Object} that - The axes handler component.
+     * @param {Object} change - The recipt for the change in input values
+     *                          of an axes.
      *
      */
-    gamepad.handlers.axes.inputEvents = function (axesIndex, value) {
-        if (value > 0.4 || value < -0.4) {
-            const yOffset = $(window).scrollTop();
-            const xOffset = $(window).scrollLeft();
-            switch (axesIndex) {
-
-                // When left axes is disturbed.
-                case 0:
-                    // Scroll horizontally.
-                    $(window).scrollLeft(xOffset + value * 50);
-                    break;
-                case 1:
-                    // Scroll vertically.
-                    $(window).scrollTop(yOffset + value * 50);
-                    break;
-                
-                // When right axes is disturbed.
-                case 2:
-                case 3:
-                    // Switch between options.
-                    gamepad.handlers.axes.rightAxesHandler(value);
-                    break;
-            };
+    gamepad.handlers.axes.axesHandler = function (that, change) {
+        let path = change.path[change.path.length - 1];
+        let axesConfiguration = that.options.configuration[path];
+        if (axesConfiguration != "vacant") {
+            that[axesConfiguration](change.value);
         };
+    };
+
+    
+    /**
+     *
+     * Scroll horizontally across the webpage.
+     * 
+     * @param {Object} that - The axes handler component.
+     * @param {Integer} value - The value of axes input.
+     *
+     */
+    gamepad.handlers.axes.scrollHorizontally = function (that, value) {
+        if (value > 0.4 || value < -0.4) {
+            clearInterval(that.options.intervalForHorizontalScroll);
+            that.options.intervalForHorizontalScroll = setInterval(function() {
+                let xOffset = $(window).scrollLeft();
+                $(window).scrollLeft(xOffset + value * 50);
+            }, that.options.frequency);
+        }
+        else if (value < 0.4 && value > -0.4) {
+            clearInterval(that.options.intervalForHorizontalScroll);
+        }
+    };
+
+    /**
+     *
+     * Scroll vertically across the webpage.
+     * 
+     * @param {Object} that - The axes handler component.
+     * @param {Integer} value - The value of axes input.
+     *
+     */
+    gamepad.handlers.axes.scrollVertically = function (that, value) {
+        if (value > 0.4 || value < -0.4) {
+            clearInterval(that.options.intervalForVerticalScroll);
+            that.options.intervalForVerticalScroll = setInterval(function() {
+                let yOffset = $(window).scrollTop();
+                $(window).scrollTop(yOffset + value * 50);
+            }, that.options.frequency);
+        }
+        else if (value < 0.4 && value > -0.4) {
+            clearInterval(that.options.intervalForVerticalScroll);
+        }
     };
 
     /**
@@ -58,7 +128,7 @@
     gamepad.handlers.axes.rightAxesHandler = function (value) {
 
         // If SELECT element is currently focussed.
-        if (document.activeElement.nodeName === 'SELECT') {
+        if (document.activeElement.nodeName === 'SELECT' && (value == 1 || value == -1)) {
             const activeElement = document.activeElement.nodeName.toLowerCase();
             value > 0 ? gamepad.handlers.axes.downKey(activeElement) : gamepad.handlers.axes.upKey(activeElement);
         }
@@ -66,9 +136,11 @@
 
     /**
      *
-     * Navigate to the previous options if right axes is moved in the left or upward direction.
+     * Navigate to the previous option if right axes is moved in the 
+     * left or upward direction.
      * 
-     * @param {Integer} value - The value of the right axes input.
+     * @param {String} activeElement - The string value of the currently
+     *                                 active element.
      *
      */
     gamepad.handlers.axes.upKey = function (activeElement) {
@@ -80,9 +152,11 @@
 
     /**
      *
-     * Navigate to the previous options if right axes is moved in the right or downward direction.
+     * Navigate to the previous option if right axes is moved in the 
+     * right or downward direction.
      * 
-     * @param {Integer} value - The value of the right axes input.
+     * @param {String} activeElement - The string value of the currently
+     *                                 active element.
      *
      */
     gamepad.handlers.axes.downKey = function (activeElement) {
