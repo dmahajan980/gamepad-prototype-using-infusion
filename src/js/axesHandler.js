@@ -6,7 +6,7 @@
 
     /**
      * 
-     * The 'configuration' option present in the component provides a
+     * The 'axesToActionMap' option present in the component provides a
      * default layout to map each joystick axes to a particular action.
      * It can also allow the user to reconfigure the buttons as they 
      * want. For example, the user might want the action performed by
@@ -24,7 +24,7 @@
         intervalForHorizontalScroll: null,
         intervalForVerticalScroll: null,
         frequency: null,
-        configuration: {
+        axesToActionMap: {
             "0": "scrollHorizontally",
             "1": "scrollVertically",
             "2": "rightAxesHandler",
@@ -69,7 +69,7 @@
      */
     gamepad.handlers.axes.axesHandler = function (that, change) {
         let path = change.path[change.path.length - 1];
-        let axesConfiguration = that.options.configuration[path];
+        let axesConfiguration = fluid.get(that.options.configuration, path);
         if (axesConfiguration != "vacant") {
             that[axesConfiguration](change.value);
         };

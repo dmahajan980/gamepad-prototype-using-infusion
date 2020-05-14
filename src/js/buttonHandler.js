@@ -6,7 +6,7 @@
 
     /**
      * 
-     * The 'configuration' option present in the component provides a
+     * The 'buttonToActionMap' option present in the component provides a
      * default layout to map each button to a particular action. It can
      * also allow the user to reconfigure the buttons as they want. For
      * example, the user might want the action performed by the button 
@@ -20,7 +20,7 @@
      */
     fluid.defaults("gamepad.handlers.button", {
         gradeNames: ["fluid.modelComponent"],
-        configuration: { 
+        buttonToActionMap: { 
             "0": "click",
             "1": "vacant",
             "2": "vacant", 
@@ -99,7 +99,7 @@
      */
     gamepad.handlers.button.buttonHandler = function (that, change) {
         let path = change.path[change.path.length - 1];
-        let buttonConfiguration = that.options.configuration[path];
+        let buttonConfiguration = fluid.get(that.options.configuration, path);
         if (change.value > 0.4 && buttonConfiguration != "vacant") {
             that[buttonConfiguration]();
         };
